@@ -23,7 +23,6 @@ Check out the [Wiki](https://github.com/Pseudonium/Obsidian_to_Anki/wiki)! It ha
     "apiLogPath": null,
     "webBindAddress": "127.0.0.1",
     "webBindPort": 8765,
-    "webCorsOrigin": "http://localhost",
     "webCorsOriginList": [
         "http://localhost",
         "app://obsidian.md"
