@@ -95,7 +95,7 @@ abstract class AbstractNote {
         }
 		if (context) {
 			const context_field = data.context_fields[this.note_type]
-			template["fields"][context_field] += context
+			template["fields"][context_field] += '<br>' + context
 		}
 		if (data.add_obs_tags) {
 			for (let key in template["fields"]) {
@@ -297,7 +297,7 @@ export class RegexNote {
         }
 		if (context) {
 			const context_field = data.context_fields[this.note_type]
-			template["fields"][context_field] += context
+			template["fields"][context_field] += '<br>' + context
 		}
 		if (this.note_type.includes("Cloze") && !(note_has_clozes(template))) {
 			this.identifier = CLOZE_ERROR //An error code that says "don't add this note!"
