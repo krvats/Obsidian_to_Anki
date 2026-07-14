@@ -75,7 +75,7 @@ Current features (check out the wiki for more details):
     * `[Pp]rivate*/**` - Ignore all files and folders in the root of the vault that start with `private` or with `Private`
 * **Updating notes from file** - Your text files are the canonical source of the notes.
 * **Tags**, including **tags for an entire file**.
-* **Adding to user-specified deck** on a *per-file* basis.
+* **Adding to user-specified deck** on a *per-file* basis. Multiple target decks can be specified within a single file — cards are assigned to the nearest `TARGET DECK` line above them. If a `TARGET DECK` line is placed in YAML frontmatter, it locks the entire file to that deck.
 * **Markdown formatting**.
 * **Math formatting**.
 * **Embedded images**. GIFs should work too.

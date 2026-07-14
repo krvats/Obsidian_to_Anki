@@ -274,8 +274,14 @@ export class FileManager {
             let file = this.ownFiles[i]
             const file_response = AnkiConnect.parse(note_info_array_by_file[i])
             let temp: number[] = []
-            for (let note_response of file_response) {
+            file.note_edit_deck_map = []
+            for (let j in file_response) {
+                let note_response = file_response[j]
                 temp.push(...note_response.cards)
+                file.note_edit_deck_map.push({
+                    card_ids: note_response.cards,
+                    deck: file.notes_to_edit[parseInt(j)].note.deckName
+                })
             }
             file.card_ids = temp
         }
