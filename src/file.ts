@@ -320,7 +320,7 @@ export class AllFile extends AbstractFile {
                 parsed.note.tags.push(...this.global_tags.split(TAG_SEP))
                 this.notes_to_add.push(parsed.note)
                 this.id_indexes.push(position)
-            } else if (!this.data.EXISTING_IDS.includes(parsed.identifier)) {
+            } else if (!this.data.EXISTING_IDS.has(parsed.identifier)) {
                 if (parsed.identifier == CLOZE_ERROR) {
                     continue
                 }
@@ -358,7 +358,7 @@ export class AllFile extends AbstractFile {
                 parsed.note.tags.push(...this.global_tags.split(TAG_SEP))
                 this.inline_notes_to_add.push(parsed.note)
                 this.inline_id_indexes.push(position)
-            } else if (!this.data.EXISTING_IDS.includes(parsed.identifier)) {
+            } else if (!this.data.EXISTING_IDS.has(parsed.identifier)) {
                 // Need to show an error
                 if (parsed.identifier == CLOZE_ERROR) {
                     continue
@@ -392,7 +392,7 @@ export class AllFile extends AbstractFile {
                         this.data.add_context ? this.getContextAtIndex(match.index) : ""
                     )
                     if (search_id) {
-                        if (!(this.data.EXISTING_IDS.includes(parsed.identifier))) {
+                        if (!(this.data.EXISTING_IDS.has(parsed.identifier))) {
                             if (parsed.identifier == CLOZE_ERROR) {
                                 // This means it wasn't actually a note! So we should remove it from ignore_spans
                                 this.ignore_spans.pop()
