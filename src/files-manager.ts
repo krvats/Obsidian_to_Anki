@@ -120,7 +120,14 @@ export class FileManager {
 
     dataToFileData(file: TFile): FileData {
         const folder_path_list: TFolder[] = this.getFolderPathList(file)
+        // EXISTING_IDS holds every Anki note id and is only ever read via
+        // .includes() during scanning. Detach it before the deep clone so
+        // we don't allocate a fresh copy per file (on large vaults the
+        // combined cost was crashing Obsidian with an OOM).
+        const existing_ids = this.data.EXISTING_IDS
+        this.data.EXISTING_IDS = undefined
         let result: FileData = JSON.parse(JSON.stringify(this.data))
+        this.data.EXISTING_IDS = existing_ids
         //Lost regexp, so have to get them back
         result.FROZEN_REGEXP = this.data.FROZEN_REGEXP
         result.DECK_REGEXP = this.data.DECK_REGEXP
@@ -128,6 +135,7 @@ export class FileManager {
         result.NOTE_REGEXP = this.data.NOTE_REGEXP
         result.INLINE_REGEXP = this.data.INLINE_REGEXP
         result.EMPTY_REGEXP = this.data.EMPTY_REGEXP
+        result.EXISTING_IDS = existing_ids
         result.template.deckName = this.getDefaultDeck(file, folder_path_list)
         result.template.tags = this.getDefaultTags(file, folder_path_list)
         return result
