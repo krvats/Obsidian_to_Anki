@@ -20,8 +20,7 @@ export async function settingToData(app: App, settings: PluginSettings, fields_d
         modelName: "",
         fields: {},
         options: {
-            allowDuplicate: false,
-            duplicateScope: "deck"
+            allowDuplicate: true,
         },
         tags: [settings.Defaults.Tag]
     }
