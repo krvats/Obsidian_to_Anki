@@ -13,6 +13,7 @@ export default class MyPlugin extends Plugin {
 	fields_dict: Record<string, string[]>
 	added_media: string[]
 	file_hashes: Record<string, string>
+	scan_in_progress: boolean = false
 
 	async getDefaultSettings(): Promise<PluginSettings> {
 		let settings: PluginSettings = {
@@ -184,6 +185,20 @@ export default class MyPlugin extends Plugin {
 	}
 
 	async scanVault() {
+		if (this.scan_in_progress) {
+			new Notice("A vault scan is already in progress.")
+			return
+		}
+
+		this.scan_in_progress = true
+		try {
+			await this.scanVaultOnce()
+		} finally {
+			this.scan_in_progress = false
+		}
+	}
+
+	async scanVaultOnce() {
 		new Notice('Scanning vault, check console for details...');
 		console.info("Checking connection to Anki...")
 		try {
@@ -214,6 +229,11 @@ export default class MyPlugin extends Plugin {
 		}
 		
 		await manager.initialiseFiles()
+		if (manager.ownFiles.length === 0) {
+			new Notice("No changed files found. Nothing to sync.")
+			console.info("No changed files found. Nothing to sync.")
+			return
+		}
 		await manager.requests_1()
 		this.added_media = Array.from(manager.added_media_set)
 		const hashes = manager.getHashes()

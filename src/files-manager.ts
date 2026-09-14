@@ -5,6 +5,12 @@ import { AllFile } from './file'
 import * as AnkiConnect from './anki'
 import { basename } from 'path'
 import multimatch from "multimatch"
+import {
+    createFileData,
+    isFileUnchanged,
+    VAULT_SCAN_YIELD_INTERVAL,
+    yieldToEventLoop
+} from './scan-optimizations'
 interface addNoteResponse {
     result: number,
     error: string | null
@@ -120,59 +126,42 @@ export class FileManager {
 
     dataToFileData(file: TFile): FileData {
         const folder_path_list: TFolder[] = this.getFolderPathList(file)
-        // EXISTING_IDS holds every Anki note id and is only ever read via
-        // .includes() during scanning. Detach it before the deep clone so
-        // we don't allocate a fresh copy per file (on large vaults the
-        // combined cost was crashing Obsidian with an OOM).
-        const existing_ids = this.data.EXISTING_IDS
-        this.data.EXISTING_IDS = undefined
-        let result: FileData = JSON.parse(JSON.stringify(this.data))
-        this.data.EXISTING_IDS = existing_ids
-        //Lost regexp, so have to get them back
-        result.FROZEN_REGEXP = this.data.FROZEN_REGEXP
-        result.DECK_REGEXP = this.data.DECK_REGEXP
-        result.TAG_REGEXP = this.data.TAG_REGEXP
-        result.NOTE_REGEXP = this.data.NOTE_REGEXP
-        result.INLINE_REGEXP = this.data.INLINE_REGEXP
-        result.EMPTY_REGEXP = this.data.EMPTY_REGEXP
-        result.EXISTING_IDS = existing_ids
-        result.template.deckName = this.getDefaultDeck(file, folder_path_list)
-        result.template.tags = this.getDefaultTags(file, folder_path_list)
-        return result
-    }
-
-    async genAllFiles() {
-        for (let file of this.files) {
-            const content: string = await this.app.vault.read(file)
-            const cache: CachedMetadata = this.app.metadataCache.getCache(file.path)
-            const file_data = this.dataToFileData(file)
-            this.ownFiles.push(
-                new AllFile(
-                    content,
-                    file.path,
-                    this.data.add_file_link ? this.getUrl(file) : "",
-                    file_data,
-                    cache
-                )
-            )
-        }
+        return createFileData(
+            this.data,
+            this.getDefaultDeck(file, folder_path_list),
+            this.getDefaultTags(file, folder_path_list)
+        )
     }
 
     async initialiseFiles() {
-        await this.genAllFiles()
         let files_changed: Array<AllFile> = []
         let obfiles_changed: TFile[] = []
-        for (let index in this.ownFiles) {
-            const i = parseInt(index)
-            let file = this.ownFiles[i]
-            if (!(this.file_hashes.hasOwnProperty(file.path) && file.getHash() === this.file_hashes[file.path])) {
-                //Indicates it's changed or new
+
+        for (let index = 0; index < this.files.length; index++) {
+            const obFile = this.files[index]
+            const content: string = await this.app.vault.read(obFile)
+
+            if (!isFileUnchanged(obFile.path, content, this.file_hashes)) {
+                const cache: CachedMetadata = this.app.metadataCache.getCache(obFile.path)
+                const file = new AllFile(
+                    content,
+                    obFile.path,
+                    this.data.add_file_link ? this.getUrl(obFile) : "",
+                    this.dataToFileData(obFile),
+                    cache
+                )
+
                 console.info("Scanning ", file.path, "as it's changed or new.")
                 file.scanFile()
                 files_changed.push(file)
-                obfiles_changed.push(this.files[i])
+                obfiles_changed.push(obFile)
+            }
+
+            if ((index + 1) % VAULT_SCAN_YIELD_INTERVAL === 0) {
+                await yieldToEventLoop()
             }
         }
+
         this.ownFiles = files_changed
         this.files = obfiles_changed
     }
