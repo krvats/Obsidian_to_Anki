@@ -32,7 +32,7 @@ export default class MyPlugin extends Plugin {
 				"Frozen Fields Line": "FROZEN"
 			},
 			Defaults: {
-				"Scan Directory": "",
+				"Scan Directories": [],
 				"Tag": "Obsidian_to_Anki",
 				"Deck": "Default",
 				"Scheduling Interval": 0,
@@ -195,16 +195,18 @@ export default class MyPlugin extends Plugin {
 		}
 		new Notice("Successfully connected to Anki! This could take a few minutes - please don't close Anki until the plugin is finished")
 		const data: ParsedSettings = await settingToData(this.app, this.settings, this.fields_dict)
-		const scanDir = this.app.vault.getAbstractFileByPath(this.settings.Defaults["Scan Directory"])
+		const scanDirs = this.settings.Defaults["Scan Directories"];
 		let manager = null;
-		if (scanDir !== null) {
+		if (scanDirs && scanDirs.length > 0) {
 			let markdownFiles = [];
-			if (scanDir instanceof TFolder) {
-				console.info("Using custom scan directory: " + scanDir.path)
-				markdownFiles = this.getAllTFilesInFolder(scanDir);
-			} else {
-				new Notice("Error: incorrect path for scan directory " + this.settings.Defaults["Scan Directory"])
-				return
+			for (const dirPath of scanDirs) {
+				const scanDir = this.app.vault.getAbstractFileByPath(dirPath);
+				if (scanDir instanceof TFolder) {
+					console.info("Using custom scan directory: " + scanDir.path)
+					markdownFiles.push(...this.getAllTFilesInFolder(scanDir));
+				} else {
+					new Notice("Error: incorrect path for scan directory " + dirPath)
+				}
 			}
 			manager = new FileManager(this.app, data, markdownFiles, this.file_hashes, this.added_media)
 		} else {

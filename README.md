@@ -59,9 +59,9 @@ The script needs to be able to:
 
 Current features (check out the wiki for more details):
 * **Custom note types** - You're not limited to the 6 built-in note types of Anki.
-* **Custom scan directory** 
+* **Custom scan directories** 
   * The plugin will scan the entire vault by default
-  * You can also set which directory (includes all sub-directories as well) to scan via plugin settings
+  * You can also set which directories (includes all sub-directories as well) to scan via plugin settings
 * **Ignore Folders and Files**
   * You can specify which files and folders to ignore 
   * This can be done in the settings of this plugin with [Glob syntax](https://en.wikipedia.org/wiki/Glob_(programming)#Syntax).
